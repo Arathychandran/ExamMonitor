@@ -1,0 +1,33 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.mp4
+*.avi
+*.mov
+*.h5
+*.pt
+*.pth
+*.ckpt
+
+
+# Model files
+*.h5
+*.pt
+*.pth
+*.ckpt
+
+# Videos
+*.mp4
+*.avi
+*.mov
+
+# Datasets
+dataset/
+data/
+*.pyc
+
+# OS files
+.DS_Store

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Upload Student - ExamMonitor{% endblock %}
+{% block page_title %}Register Student{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card-modern">
+      <div class="card-title">
+        <i class="bi bi-person-plus text-primary"></i>
+        Student Registration
+      </div>
+      <form method="post" enctype="multipart/form-data">
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Roll Number</label>
+          <input type="number" class="form-control form-control-lg" name="roll_no" placeholder="e.g., 101" required>
+          <small class="text-muted">Unique roll number for this student</small>
+        </div>
+        
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Student Name</label>
+          <input class="form-control form-control-lg" name="name" placeholder="Full name">
+          <small class="text-muted">Optional: Student's full name</small>
+        </div>
+        
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Student Photo</label>
+          <input type="file" class="form-control form-control-lg" name="file" accept="image/*" required>
+          <small class="text-muted">Upload a clear front-facing photo of the student</small>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success-modern btn-modern flex-grow-1">
+            <i class="bi bi-upload"></i> Upload Student
+          </button>
+          <a href="{{ url_for('home') }}" class="btn btn-outline-secondary btn-modern">
+            <i class="bi bi-x-circle"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

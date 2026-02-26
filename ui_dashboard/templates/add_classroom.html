@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Add Classroom - ExamMonitor{% endblock %}
+{% block page_title %}Add New Classroom{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card-modern">
+      <div class="card-title">
+        <i class="bi bi-building-add text-primary"></i>
+        Classroom Information
+      </div>
+      <form method="post" enctype="multipart/form-data">
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Classroom Name</label>
+          <input class="form-control form-control-lg" name="name" placeholder="e.g., Room 101" required>
+          <small class="text-muted">Enter a descriptive name for this classroom</small>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Camera URI</label>
+          <input class="form-control form-control-lg" name="camera_uri" placeholder="0 (for webcam) or RTSP URL" required>
+          <small class="text-muted">Camera index (0, 1, 2...) or RTSP stream URL</small>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Number of Seats</label>
+          <input type="number" class="form-control form-control-lg" name="num_seats" min="1" placeholder="e.g., 30" required>
+          <small class="text-muted">Total number of seats in this classroom</small>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Classroom Image</label>
+          <input type="file" class="form-control form-control-lg" name="classroom_image" accept="image/*" required>
+          <small class="text-muted">Upload a photo of the classroom for seat mapping</small>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary-modern btn-modern flex-grow-1">
+            <i class="bi bi-arrow-right-circle"></i> Next: Seat Mapping
+          </button>
+          <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-modern">
+            <i class="bi bi-x-circle"></i> Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

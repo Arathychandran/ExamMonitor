@@ -1,0 +1,18 @@
+{
+  "classroom_id": 38,
+  "camera_uri": "0",
+  "seats": [
+    {
+      "seat_label": "Seat-1",
+      "bbox": [
+        11,
+        35,
+        514,
+        302
+      ],
+      "row": null,
+      "col": null,
+      "assigned_roll_no": 102
+    }
+  ]
+}

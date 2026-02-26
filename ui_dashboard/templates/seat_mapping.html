@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Seat Mapping - ExamMonitor{% endblock %}
+{% block page_title %}Seat Mapping{% endblock %}
+{% block content %}
+
+<div class="card-modern mb-4">
+  <div class="card-title">
+    <i class="bi bi-grid-3x3 text-primary"></i>
+    Seat Mapping
+  </div>
+  <p class="text-muted mb-4">Drag and resize boxes to match each seat on the classroom image.</p>
+
+<div id="image-wrapper">
+    <img src="{{ url_for('static', filename=image) }}" id="roomImage">
+</div>
+
+<button class="btn btn-success-modern btn-modern mt-3" onclick="saveSeats()">
+  <i class="bi bi-check-circle"></i> Confirm Seats
+</button>
+
+<style>
+#image-wrapper {
+    position: relative;
+    display: inline-block;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: #000;
+}
+
+#roomImage {
+    display: block;
+    max-width: 100%;
+}
+
+.bbox {
+    position: absolute;
+    border: 2px solid red;
+    color: red;
+    font-size: 12px;
+    background: rgba(255, 0, 0, 0.05);
+    resize: both;
+    overflow: hidden;
+    cursor: move;
+    box-sizing: border-box;
+}
+</style>
+
+<script>
+// Ensure boxes are created only after the image is loaded,
+// and that the wrapper matches the image size so boxes sit on top.
+document.addEventListener("DOMContentLoaded", () => {
+    const numSeats = {{ num_seats|int }};
+const wrapper = document.getElementById("image-wrapper");
+    const img = document.getElementById("roomImage");
+
+    function initBoxes() {
+        // If the image isn't loaded yet, wait a bit.
+        if (!img.complete || img.naturalWidth === 0) {
+            setTimeout(initBoxes, 100);
+            return;
+        }
+
+        // Match wrapper size to the rendered image so the overlay aligns.
+        const rect = img.getBoundingClientRect();
+        wrapper.style.width = rect.width + "px";
+        wrapper.style.height = rect.height + "px";
+
+for (let i = 0; i < numSeats; i++) {
+    createBox(i + 1);
+        }
+}
+
+function createBox(index) {
+    const box = document.createElement("div");
+    box.className = "bbox";
+    box.innerText = "Seat-" + index;
+
+        // Place boxes roughly across the image; user will drag them exactly.
+        box.style.left = (20 + (index - 1) * 10) + "px";
+        box.style.top = (20 + (index - 1) * 10) + "px";
+    box.style.width = "80px";
+    box.style.height = "80px";
+
+    makeDraggable(box);
+    wrapper.appendChild(box);
+}
+
+function makeDraggable(el) {
+    let startX, startY, startLeft, startTop;
+    let dragging = false;
+
+    el.addEventListener("mousedown", e => {
+            // If the user is clicking near the bottom-right corner, let the
+            // native CSS `resize: both` handle take over (no drag).
+            const rect = el.getBoundingClientRect();
+            const resizeMargin = 12; // px region for resize handle
+            const nearRight = rect.right - e.clientX <= resizeMargin;
+            const nearBottom = rect.bottom - e.clientY <= resizeMargin;
+            if (nearRight && nearBottom) {
+                return; // allow resize, don't start drag
+            }
+
+            // Otherwise, start drag on normal clicks inside the box.
+        dragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = el.offsetLeft;
+        startTop = el.offsetTop;
+        e.preventDefault();
+    });
+
+    document.addEventListener("mousemove", e => {
+        if (!dragging) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+
+            // clamp within wrapper bounds
+            const maxLeft = wrapper.clientWidth - el.offsetWidth;
+            const maxTop = wrapper.clientHeight - el.offsetHeight;
+            newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+            newTop = Math.max(0, Math.min(newTop, maxTop));
+
+        el.style.left = newLeft + "px";
+        el.style.top = newTop + "px";
+    });
+
+        document.addEventListener("mouseup", () => {
+            dragging = false;
+        });
+}
+
+    window.saveSeats = function () {
+    const seats = [];
+        wrapper.querySelectorAll(".bbox").forEach(box => {
+        seats.push({
+            seat_label: box.innerText,
+            bbox: [
+                box.offsetLeft,
+                box.offsetTop,
+                box.offsetLeft + box.offsetWidth,
+                box.offsetTop + box.offsetHeight
+            ]
+        });
+    });
+
+    fetch("/classroom/{{ classroom_id }}/save-seats", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ seats })
+    })
+        .then(() => {
+          if (typeof showToast === 'function') {
+            showToast("Seat mapping saved successfully", 'success');
+          } else {
+            alert("Seat mapping saved successfully");
+          }
+          setTimeout(() => {
+            window.location.href = "{{ url_for('edit_seating', classroom_id=classroom_id) }}";
+          }, 1000);
+        })
+        .catch(err => {
+            console.error("Error saving seats", err);
+            alert("Failed to save seat mapping. Check console for details.");
+        });
+    };
+
+    initBoxes();
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Edit Seating - {{ classroom.name }}{% endblock %}
+{% block page_title %}Edit Seating — {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="card-modern mb-4">
+  <div class="card-title">
+    <i class="bi bi-table text-primary"></i>
+    Seat Assignment
+  </div>
+  <p class="text-muted mb-4">Update roll numbers for each seat, then continue to the classroom dashboard.</p>
+
+  <form method="POST">
+    <div class="table-responsive">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>Seat Label</th>
+            <th>X1</th>
+            <th>Y1</th>
+            <th>X2</th>
+            <th>Y2</th>
+            <th>Assigned Roll No</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td>
+              <strong>{{ row.Seat_Label }}</strong>
+              <input type="hidden" name="seat_label" value="{{ row.Seat_Label }}">
+            </td>
+            <td class="text-muted">{{ row.X1 }}</td>
+            <td class="text-muted">{{ row.Y1 }}</td>
+            <td class="text-muted">{{ row.X2 }}</td>
+            <td class="text-muted">{{ row.Y2 }}</td>
+            <td>
+              <input type="text"
+                     class="form-control"
+                     name="assigned_roll_no"
+                     value="{{ row.Assigned_Roll_No or '' }}"
+                     placeholder="Enter roll no">
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-primary-modern btn-modern">
+        <i class="bi bi-check-circle"></i> Save & Continue to Classroom
+      </button>
+      <a href="{{ url_for('classroom_detail', classroom_id=classroom.id) }}" class="btn btn-outline-secondary btn-modern">
+        <i class="bi bi-skip-forward"></i> Skip to Classroom
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

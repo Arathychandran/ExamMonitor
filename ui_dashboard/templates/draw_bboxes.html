@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Draw seats — {{ classroom.name }}</h3>
+
+<div class="row">
+  <div class="col-md-8">
+    <div style="position:relative; display:inline-block;">
+      <!-- live stream image -->
+      <img id="liveImg" src="{{ url_for('video_feed', classroom_id=classroom.id) }}" style="max-width:100%; border:1px solid #ccc; display:block;" />
+      <!-- overlay canvas -->
+      <canvas id="drawCanvas" style="position:absolute; left:0; top:0;"></canvas>
+    </div>
+    <p class="mt-2">Draw rectangle: click & drag. Click an existing rect to select it. Use the form to name & save.</p>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card p-3">
+      <h5>Save Seat</h5>
+      <div class="mb-2">
+        <label class="form-label">Seat Label</label>
+        <input class="form-control" id="seatLabel" placeholder="Seat-1" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Assigned Roll No (optional)</label>
+        <input class="form-control" id="assignedRoll" placeholder="101" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Row (optional)</label>
+        <input class="form-control" id="rowIdx" placeholder="1" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Col (optional)</label>
+        <input class="form-control" id="colIdx" placeholder="1" />
+      </div>
+      <button class="btn btn-primary" id="saveBtn">Save seat</button>
+      <button class="btn btn-secondary" id="clearBtn">Clear current</button>
+
+      <hr/>
+      <h6>Existing seats</h6>
+      <ul id="existingSeats" class="list-unstyled small">
+        {% for s in seats %}
+        <li data-seat='{{ s | tojson }}'>{{ s.seat_label }} — Roll: {{ s.assigned_roll_no or "-" }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+ Draw UI logic:
+ - Shows liveImg (mjpeg). Canvas overlays and is resized to match visible image size.
+ - Mouse drag to draw rectangle. Canvas stores currentRect in screen pixels.
+ - On Save: compute bbox in image natural resolution using image.naturalWidth/naturalHeight scaling.
+ - POST JSON to /api/save_seat: {classroom_id, seat_label, bbox:[x,y,w,h], row, col, assigned_roll_no}
+*/
+
+const classroomId = { classroom_id };
+const liveImg = document.getElementById('liveImg');
+const canvas = document.getElementById('drawCanvas');
+const ctx = canvas.getContext('2d');
+
+let isDrawing = false;
+let startX = 0, startY = 0;
+let currentRect = null; // {x,y,w,h} in screen (CSS) pixels
+let savedRects = []; // existing seats drawn
+
+function resizeCanvasToImage(){
+  const rect = liveImg.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  canvas.style.left = rect.left + 'px';
+  canvas.style.top = rect.top + 'px';
+  redrawAll();
+}
+
+function redrawAll(){
+  // clear
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // draw saved rects
+  savedRects.forEach(r=>{
+    ctx.strokeStyle = 'rgba(0,200,0,0.9)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
+    ctx.fillStyle = 'rgba(0,200,0,0.15)';
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.fillStyle = '#000';
+    ctx.fillText(r.label || '', r.x+4, r.y+12);
+  });
+  if(currentRect){
+    ctx.strokeStyle = 'rgba(255,0,0,0.9)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(currentRect.x, currentRect.y, currentRect.w, currentRect.h);
+  }
+}
+
+// convert event coords to canvas coords
+function getMousePos(evt){
+  const rect = canvas.getBoundingClientRect();
+  const x = evt.clientX - rect.left;
+  const y = evt.clientY - rect.top;
+  return {x, y};
+}
+
+// handle draw
+canvas.addEventListener('mousedown', (e)=>{
+  const p = getMousePos(e);
+  isDrawing = true; startX = p.x; startY = p.y;
+  currentRect = {x: startX, y: startY, w: 0, h: 0};
+});
+canvas.addEventListener('mousemove', (e)=>{
+  if(!isDrawing) return;
+  const p = getMousePos(e);
+  currentRect.w = p.x - startX;
+  currentRect.h = p.y - startY;
+  // normalize negative widths
+  if(currentRect.w < 0){ currentRect.x = p.x; currentRect.w = Math.abs(currentRect.w); } else { currentRect.x = startX;}
+  if(currentRect.h < 0){ currentRect.y = p.y; currentRect.h = Math.abs(currentRect.h); } else { currentRect.y = startY;}
+  redrawAll();
+});
+canvas.addEventListener('mouseup', (e)=>{
+  isDrawing = false;
+  redrawAll();
+});
+canvas.addEventListener('mouseleave', (e)=>{ if(isDrawing){ isDrawing=false; redrawAll(); } });
+
+// when image size changes, adjust canvas
+window.addEventListener('resize', resizeCanvasToImage);
+liveImg.addEventListener('load', resizeCanvasToImage);
+liveImg.addEventListener('error', ()=>{ setTimeout(resizeCanvasToImage, 500); });
+
+// save button
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+  if(!currentRect){ alert("Draw a rectangle first by dragging on the image."); return; }
+  // compute scale from visible size to natural image size
+  const visW = liveImg.width; const visH = liveImg.height;
+  const natW = liveImg.naturalWidth; const natH = liveImg.naturalHeight;
+  if(!natW || !natH){ alert("Image not ready. Wait a moment and try again."); return; }
+  const scaleX = natW / visW; const scaleY = natH / visH;
+
+  const bbox_nat = [
+    Math.round(currentRect.x * scaleX),
+    Math.round(currentRect.y * scaleY),
+    Math.round(currentRect.w * scaleX),
+    Math.round(currentRect.h * scaleY)
+  ];
+  const seat_label = document.getElementById('seatLabel').value || ('Seat-' + (savedRects.length+1));
+  const assigned_roll = document.getElementById('assignedRoll').value || null;
+  const row = document.getElementById('rowIdx').value || null;
+  const col = document.getElementById('colIdx').value || null;
+
+  const payload = { classroom_id: classroomId, seat_label: seat_label, bbox: bbox_nat, row: row, col: col, assigned_roll_no: assigned_roll };
+  const res = await fetch('/api/save_seat', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+  const j = await res.json();
+  if(j.ok){
+    alert("Saved seat id " + j.seat_id);
+    // add to savedRects (store screen coords for display)
+    const label = seat_label;
+    savedRects.push({x: currentRect.x, y: currentRect.y, w: currentRect.w, h: currentRect.h, label: label});
+    currentRect = null;
+    redrawAll();
+    // clear fields
+    document.getElementById('seatLabel').value = '';
+    document.getElementById('assignedRoll').value = '';
+  } else {
+    alert("Save error: " + (j.error || "unknown"));
+  }
+});
+
+// clear current rectangle
+document.getElementById('clearBtn').addEventListener('click', ()=>{ currentRect = null; redrawAll(); });
+
+// populate existing seats as rectangles (convert bbox from natural to visible)
+function loadExisting(){
+  const items = document.querySelectorAll('#existingSeats li');
+  items.forEach(li=>{
+    try{
+      const s = JSON.parse(li.getAttribute('data-seat'));
+      const bbox = s.bbox; // may be list/str
+      if(!bbox) return;
+      // convert bbox (natural image px) to visible canvas px once liveImg has dimensions
+      const visW = liveImg.width; const visH = liveImg.height;
+      const natW = liveImg.naturalWidth; const natH = liveImg.naturalHeight;
+      if(!natW || !natH) return;
+      const scaleX = visW / natW; const scaleY = visH / natH;
+      const x = bbox[0] * scaleX;
+      const y = bbox[1] * scaleY;
+      const w = bbox[2] * scaleX;
+      const h = bbox[3] * scaleY;
+      savedRects.push({x: x, y: y, w: w, h: h, label: s.seat_label});
+    }catch(e){}
+  });
+  redrawAll();
+}
+
+liveImg.onload = ()=>{ resizeCanvasToImage(); loadExisting(); };
+if(liveImg.complete){ resizeCanvasToImage(); loadExisting(); }
+</script>
+{% endblock %}

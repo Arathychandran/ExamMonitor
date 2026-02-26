@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Classrooms - ExamMonitor{% endblock %}
+{% block page_title %}Classrooms{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold">All Classrooms</h2>
+  <a href="{{ url_for('add_classroom') }}" class="btn btn-primary-modern btn-modern">
+    <i class="bi bi-plus-circle"></i> Add New Classroom
+  </a>
+</div>
+
+{% if classrooms %}
+<div class="row g-4">
+  {% for c in classrooms %}
+  <div class="col-md-4">
+    <div class="card-modern h-100">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <h5 class="fw-bold mb-1">{{ c.name }}</h5>
+          <p class="text-muted small mb-0">
+            <i class="bi bi-camera-video"></i> Camera: {{ c.camera_uri }}
+          </p>
+        </div>
+        <span class="badge-modern badge-success">Active</span>
+      </div>
+      <div class="d-grid">
+        <a href="{{ url_for('edit_seating', classroom_id=c.id) }}" class="btn btn-primary-modern btn-modern">
+          <i class="bi bi-box-arrow-in-right"></i> Open Classroom
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card-modern text-center py-5">
+  <i class="bi bi-inbox" style="font-size: 64px; color: var(--text-light);"></i>
+  <h4 class="mt-4 mb-2">No Classrooms Yet</h4>
+  <p class="text-muted mb-4">Create your first classroom to start monitoring exams</p>
+  <a href="{{ url_for('add_classroom') }}" class="btn btn-primary-modern btn-modern">
+    <i class="bi bi-plus-circle"></i> Add Classroom
+  </a>
+</div>
+{% endif %}
+{% endblock %}

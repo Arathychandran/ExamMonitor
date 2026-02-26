@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Home - ExamMonitor{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: #DBEAFE; color: var(--primary);">
+        <i class="bi bi-building"></i>
+      </div>
+      <div class="kpi-value">{{ classrooms_count|default(0) }}</div>
+      <div class="kpi-label">Active Classrooms</div>
+      <div class="kpi-trend up">
+        <i class="bi bi-arrow-up"></i>
+        <span>All systems operational</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: #D1FAE5; color: var(--success);">
+        <i class="bi bi-people"></i>
+      </div>
+      <div class="kpi-value">{{ students_count|default(0) }}</div>
+      <div class="kpi-label">Registered Students</div>
+      <div class="kpi-trend up">
+        <i class="bi bi-arrow-up"></i>
+        <span>Ready for verification</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: #FEE2E2; color: var(--danger);">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+      <div class="kpi-value">{{ violations_count|default(0) }}</div>
+      <div class="kpi-label">Detected Violations</div>
+      <div class="kpi-trend down">
+        <i class="bi bi-arrow-down"></i>
+        <span>Requires attention</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background: #FEF3C7; color: var(--warning);">
+        <i class="bi bi-eye"></i>
+      </div>
+      <div class="kpi-value">{{ suspicious_count|default(0) }}</div>
+      <div class="kpi-label">Suspicious Events</div>
+      <div class="kpi-trend">
+        <i class="bi bi-dash"></i>
+        <span>Under review</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mb-4">
+  <div class="col-md-8">
+    <div class="card-modern">
+      <div class="card-title">
+        <i class="bi bi-lightning-charge text-warning"></i>
+        Quick Actions
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <a href="{{ url_for('add_classroom') }}" class="btn btn-primary-modern btn-modern w-100 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-plus-circle"></i>
+            <span>Add New Classroom</span>
+          </a>
+        </div>
+        <div class="col-md-6">
+          <a href="{{ url_for('upload_student') }}" class="btn btn-success-modern btn-modern w-100 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-person-plus"></i>
+            <span>Register Student</span>
+          </a>
+        </div>
+        <div class="col-md-6">
+          <a href="{{ url_for('import_seating') }}" class="btn btn-outline-primary btn-modern w-100 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <span>Import Seating Plan</span>
+          </a>
+        </div>
+        <div class="col-md-6">
+          <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-modern w-100 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-building"></i>
+            <span>View All Classrooms</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card-modern">
+      <div class="card-title">
+        <i class="bi bi-info-circle text-primary"></i>
+        System Status
+      </div>
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">AI Model</span>
+          <span class="badge-modern badge-success">Active</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">Face Recognition</span>
+          <span class="badge-modern badge-success">DeepFace</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">Object Detection</span>
+          <span class="badge-modern badge-success">YOLOv8</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted">Cheating Detection</span>
+          <span class="badge-modern badge-success">Enabled</span>
+        </div>
+      </div>
+      <hr>
+      <div class="small text-muted">
+        <i class="bi bi-clock"></i> Last updated: <span id="lastUpdate">Just now</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Classrooms -->
+<div class="row">
+  <div class="col-12">
+    <div class="card-modern">
+      <div class="card-title">
+        <i class="bi bi-building text-primary"></i>
+        Recent Classrooms
+      </div>
+      {% if classrooms %}
+      <div class="table-responsive">
+        <table class="table table-modern">
+          <thead>
+            <tr>
+              <th>Classroom Name</th>
+              <th>Camera</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in classrooms[:5] %}
+            <tr>
+              <td>
+                <strong>{{ c.name }}</strong>
+              </td>
+              <td>
+                <span class="badge-modern badge-info">{{ c.camera_uri }}</span>
+              </td>
+              <td>
+                <span class="badge-modern badge-success">Active</span>
+              </td>
+              <td>
+                <a href="{{ url_for('edit_seating', classroom_id=c.id) }}" class="btn btn-sm btn-primary-modern btn-modern">
+                  <i class="bi bi-box-arrow-in-right"></i> Open
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox" style="font-size: 48px;"></i>
+        <p class="mt-3">No classrooms yet. Create your first classroom to get started.</p>
+        <a href="{{ url_for('add_classroom') }}" class="btn btn-primary-modern btn-modern mt-3">
+          <i class="bi bi-plus-circle"></i> Add Classroom
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Update last update time
+  setInterval(() => {
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+  }, 1000);
+</script>
+{% endblock %}

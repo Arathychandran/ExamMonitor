@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ExamMonitor - AI-Powered Exam Monitoring System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        /* Dark Mode - Default Theme */
+        --primary: #6366F1;
+        --primary-dark: #4F46E5;
+        --primary-light: #818CF8;
+        --accent: #22D3EE;
+        --accent-dark: #06B6D4;
+        --accent-light: #67E8F9;
+        --bg: #0F172A;             /* Slate 900 */
+        --card: #1E293B;            /* Slate 800 */
+        --text: #F1F5F9;            /* Slate 100 - Light text for dark bg */
+        --text-light: #CBD5E1;      /* Slate 300 */
+        --text-lighter: #94A3B8;    /* Slate 400 */
+        --warning: #FBBF24;
+        --danger: #F87171;
+        --success: #34D399;
+        --info: #60A5FA;
+        --border: #334155;          /* Slate 700 */
+        --border-light: #1E293B;
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        --gradient-primary: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+        --gradient-accent: linear-gradient(135deg, #22D3EE 0%, #60A5FA 100%);
+      }
+
+      [data-theme="light"] {
+        /* Light Mode - Switched Theme */
+        --primary: #4F46E5;        /* Indigo - Trust & Intelligence */
+        --primary-dark: #4338CA;
+        --primary-light: #6366F1;
+        --accent: #06B6D4;         /* Cyan - Modern Tech */
+        --accent-dark: #0891B2;
+        --accent-light: #22D3EE;
+        --bg: #F1F5F9;             /* Slate Gray - Soft Background */
+        --card: #FFFFFF;
+        --text: #0F172A;           /* Slate - Dark text for light bg */
+        --text-light: #64748B;
+        --text-lighter: #94A3B8;
+        --warning: #F59E0B;        /* Amber */
+        --danger: #EF4444;         /* Red */
+        --success: #10B981;        /* Emerald */
+        --info: #3B82F6;           /* Blue */
+        --border: #E2E8F0;
+        --border-light: #F1F5F9;
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --gradient-primary: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        --gradient-accent: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      /* Logo Design */
+      .logo {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: 'Poppins', sans-serif;
+        letter-spacing: -0.5px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .logo-icon i {
+        position: relative;
+        z-index: 1;
+      }
+
+      .logo-icon::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s infinite;
+      }
+
+      @keyframes shine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+      }
+
+      .logo-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+
+      .logo-main {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.3px;
+      }
+
+      .logo-sub {
+        font-size: 10px;
+        color: var(--text-light);
+        font-weight: 500;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 260px;
+        background: var(--card);
+        border-right: 1px solid var(--border);
+        padding: 24px 0;
+        z-index: 1000;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+      }
+
+      .sidebar-header {
+        padding: 0 24px 32px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 24px;
+      }
+
+      .nav-item {
+        margin: 4px 12px;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: var(--text-light);
+        text-decoration: none;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .nav-link:hover {
+        background: var(--bg);
+        color: var(--primary);
+        transform: translateX(4px);
+      }
+
+      .nav-link.active {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: var(--shadow-md);
+      }
+
+      .nav-link i {
+        font-size: 20px;
+        width: 24px;
+        text-align: center;
+      }
+
+      /* Main Content */
+      .main-content {
+        margin-left: 260px;
+        min-height: 100vh;
+        transition: margin-left 0.3s ease;
+      }
+
+      .top-navbar {
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+      }
+
+      .content-wrapper {
+        padding: 32px;
+      }
+
+      /* Dark Mode Toggle */
+      .theme-toggle {
+        width: 48px;
+        height: 24px;
+        background: var(--border);
+        border-radius: 12px;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        border: none;
+        padding: 0;
+      }
+
+      .theme-toggle.active {
+        background: var(--gradient-primary);
+      }
+
+      .theme-toggle::before {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: white;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.3s ease;
+        box-shadow: var(--shadow);
+      }
+
+      .theme-toggle.active::before {
+        transform: translateX(24px);
+      }
+
+      .theme-toggle i {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: white;
+        transition: opacity 0.3s ease;
+      }
+
+      .theme-toggle .bi-sun {
+        left: 6px;
+        opacity: 0;
+      }
+
+      .theme-toggle .bi-moon {
+        right: 6px;
+        opacity: 1;
+      }
+
+      .theme-toggle.active .bi-sun {
+        opacity: 1;
+      }
+
+      .theme-toggle.active .bi-moon {
+        opacity: 0;
+      }
+
+      /* KPI Cards */
+      .kpi-card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        border: 1px solid var(--border);
+      }
+
+      .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 16px;
+      }
+
+      .kpi-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+      }
+
+      .kpi-label {
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .kpi-trend {
+        font-size: 12px;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .kpi-trend.up {
+        color: var(--success);
+      }
+
+      .kpi-trend.down {
+        color: var(--danger);
+      }
+
+      /* Cards */
+      .card-modern {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        margin-bottom: 24px;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+      }
+
+      .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Buttons */
+      .btn-modern {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .btn-primary-modern {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: var(--shadow-md);
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        filter: brightness(1.05);
+      }
+
+      .btn-success-modern {
+        background: var(--success);
+        color: white;
+        box-shadow: var(--shadow-md);
+      }
+
+      .btn-success-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        filter: brightness(1.1);
+      }
+
+      .btn-danger-modern {
+        background: var(--danger);
+        color: white;
+        box-shadow: var(--shadow-md);
+      }
+
+      .btn-danger-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        filter: brightness(1.1);
+      }
+
+      /* Seat Status */
+      .seat {
+        width: 80px;
+        height: 60px;
+        margin: 5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        color: white;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow);
+        font-size: 13px;
+      }
+
+      .seat:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .seat.pending { background: #6c757d; }
+      .seat.verified { background: var(--success); }
+      .seat.mismatch { background: var(--danger); }
+      .seat.absent { background: var(--warning); color: #212529; }
+      .seat.unassigned { background: #adb5bd; }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      /* Toast Notifications */
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+
+      .toast-modern {
+        background: var(--card);
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 12px;
+        border-left: 4px solid;
+        min-width: 300px;
+        animation: slideInRight 0.3s ease;
+        transition: background-color 0.3s ease;
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .toast-modern.success { border-left-color: var(--success); }
+      .toast-modern.danger { border-left-color: var(--danger); }
+      .toast-modern.warning { border-left-color: var(--warning); }
+      .toast-modern.info { border-left-color: var(--info); }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+        .sidebar.show {
+          transform: translateX(0);
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+
+      /* Table Styling */
+      .table-modern {
+        background: var(--card);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .table-modern thead {
+        background: var(--bg);
+      }
+
+      .table-modern th {
+        font-weight: 600;
+        color: var(--text);
+        border-bottom: 2px solid var(--border);
+        padding: 16px;
+      }
+
+      .table-modern td {
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .table-modern tbody tr:hover {
+        background: var(--bg);
+      }
+
+      /* Badge */
+      .badge-modern {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+      }
+
+      .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+      .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+      .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+      .badge-info { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+
+      [data-theme="dark"] .badge-success { background: rgba(52, 211, 153, 0.2); }
+      [data-theme="dark"] .badge-danger { background: rgba(248, 113, 113, 0.2); }
+      [data-theme="dark"] .badge-warning { background: rgba(251, 191, 36, 0.2); }
+      [data-theme="dark"] .badge-info { background: rgba(96, 165, 250, 0.2); }
+
+      /* Form Controls */
+      .form-control, .form-control-lg {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        background: var(--card);
+        color: var(--text) !important;
+      }
+
+      .form-control::placeholder, .form-control-lg::placeholder {
+        color: var(--text-light) !important;
+        opacity: 0.7;
+      }
+
+      .form-control:focus, .form-control-lg:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        background: var(--card);
+        color: var(--text) !important;
+      }
+
+      [data-theme="light"] .form-control:focus,
+      [data-theme="light"] .form-control-lg:focus {
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      }
+
+      /* Fix text visibility issues */
+      .text-muted {
+        color: var(--text-light) !important;
+      }
+
+      .text-dark {
+        color: var(--text) !important;
+      }
+
+      .text-black {
+        color: var(--text) !important;
+      }
+
+      .table-light {
+        background: var(--bg) !important;
+        color: var(--text) !important;
+      }
+
+      .table-light th {
+        color: var(--text) !important;
+      }
+
+      .btn-outline-secondary {
+        border-color: var(--border);
+        color: var(--text);
+      }
+
+      .btn-outline-secondary:hover {
+        background: var(--bg);
+        border-color: var(--border);
+        color: var(--text);
+      }
+
+      .small, small {
+        color: var(--text-light) !important;
+      }
+
+      .modal-content {
+        background: var(--card);
+        color: var(--text);
+      }
+
+      .modal-header {
+        border-bottom-color: var(--border);
+      }
+
+      .modal-footer {
+        border-top-color: var(--border);
+      }
+
+      .btn-close {
+        filter: invert(1);
+      }
+
+      [data-theme="light"] .btn-close {
+        filter: none;
+      }
+    </style>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="bi bi-eye-fill"></i>
+          </div>
+          <div class="logo-text">
+            <span class="logo-main">ExamMonitor</span>
+            <span class="logo-sub">AI System</span>
+          </div>
+        </div>
+      </div>
+      <nav>
+        <div class="nav-item">
+          <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+            <i class="bi bi-building"></i>
+            <span>Classrooms</span>
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="{{ url_for('upload_student') }}" class="nav-link {% if request.endpoint == 'upload_student' %}active{% endif %}">
+            <i class="bi bi-person-plus"></i>
+            <span>Upload Student</span>
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="{{ url_for('import_seating') }}" class="nav-link {% if request.endpoint == 'import_seating' %}active{% endif %}">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <span>Import Seating</span>
+          </a>
+        </div>
+        <div class="nav-item">
+          <a href="{{ url_for('add_classroom') }}" class="nav-link {% if request.endpoint == 'add_classroom' %}active{% endif %}">
+            <i class="bi bi-plus-circle"></i>
+            <span>Add Classroom</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Top Navbar -->
+      <div class="top-navbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-sm btn-outline-secondary" onclick="toggleSidebar()" style="border-color: var(--border);">
+            <i class="bi bi-list"></i>
+          </button>
+          <span class="fw-semibold">{% block page_title %}Dashboard{% endblock %}</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="text-muted small d-flex align-items-center gap-2">
+            <i class="bi bi-circle-fill text-success pulse"></i>
+            <span>System Active</span>
+          </div>
+          <button class="theme-toggle active" id="themeToggle" onclick="toggleTheme()" title="Toggle Light Mode">
+            <i class="bi bi-sun"></i>
+            <i class="bi bi-moon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Wrapper -->
+      <div class="content-wrapper">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Theme Management - Dark mode is default
+      function getTheme() {
+        return localStorage.getItem('theme') || 'dark';
+      }
+
+      function setTheme(theme) {
+        localStorage.setItem('theme', theme);
+        // Apply 'light' attribute when switching to light mode, otherwise default dark
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+        const toggle = document.getElementById('themeToggle');
+        if (toggle) {
+          // Active state means light mode (toggle is clicked)
+          toggle.classList.toggle('active', theme === 'light');
+        }
+      }
+
+      function toggleTheme() {
+        const currentTheme = getTheme();
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      }
+
+      // Initialize theme on load - default to dark
+      document.addEventListener('DOMContentLoaded', () => {
+        const theme = getTheme();
+        setTheme(theme);
+      });
+
+      function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+      }
+
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast-modern ${type}`;
+        toast.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center">
+            <span>${message}</span>
+            <button class="btn-close btn-close-sm" onclick="this.parentElement.parentElement.remove()"></button>
+          </div>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+      }
+
+      // Add fade-in animation to cards
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.kpi-card, .card-modern').forEach((el, i) => {
+          el.style.animationDelay = `${i * 0.1}s`;
+          el.classList.add('fade-in');
+        });
+      });
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
